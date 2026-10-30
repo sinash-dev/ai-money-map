@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Money Map</title>
+<meta name="description" content="An open, sourced map of how money moves between AI companies: investments, compute contracts, acquisitions and loans since 2019.">
+<meta name="theme-color" content="#04070f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%2304070f'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%2338e8ff' stroke-width='3'/%3E%3Ccircle cx='25' cy='16' r='3' fill='%23b18cff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<nav class="top">
+  <div class="wrap">
+    <a class="logo" href="#">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="#38e8ff" stroke-width="2.5"/><path d="M16 6a10 10 0 0 1 10 10" fill="none" stroke="#b18cff" stroke-width="2.5" stroke-linecap="round"/><circle cx="26" cy="16" r="3.2" fill="#b18cff"/><circle cx="8.9" cy="9" r="2.2" fill="#ffae2b"/></svg>
+      AI <em>Money</em> Map
+    </a>
+    <span class="live" id="asof"><i></i>Loading…</span>
+    <div class="links">
+      <a href="#explore">Explore</a>
+      <a href="#deals">Deal log</a>
+      <a href="#method">Method</a>
+      <a class="gh" id="ghlink" href="#">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Open data · every line sourced</span>
+    <h1>Follow the money <span class="grad">behind the AI boom.</span></h1>
+    <p class="lede">Chipmakers fund labs, labs buy compute, clouds buy chips, and much of the money comes back where it started. Explore who pays whom, how much is real, and how the web formed since 2019.</p>
+    <div class="kpis" id="kpis"></div>
+    <div class="ticker" aria-label="Latest deals"><div class="track" id="ticker"></div></div>
+  </div>
+</header>
+
+<div class="bar" id="explore">
+  <div class="wrap">
+    <div class="views" id="views">
+      <button data-v="network" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7 7l10 0M6.5 8l4.5 8M17.5 9l-4.5 7"/></svg>Network</button>
+      <button data-v="sankey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6c8 0 10 12 18 12M3 12h18M3 18c8 0 10-12 18-12"/></svg>Money flow</button>
+      <button data-v="matrix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Who pays whom</button>
+      <button data-v="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Timeline</button>
+      <button data-v="valuations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-9"/><path d="M15 6h6v6"/></svg>Valuations</button>
+      <button data-v="world"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>World map</button>
+    </div>
+    <div class="filters">
+      <div class="grp" id="kinds"></div>
+      <div class="grp">
+        <select id="status" aria-label="Which deals to count">
+          <option value="all">All announced deals</option>
+          <option value="binding">Signed or completed only</option>
+          <option value="completed">Money already moved only</option>
+        </select>
+        <label class="chip" id="estchip"><input type="checkbox" id="est" checked>Include estimates</label>
+        <select id="cat" aria-label="Company type"><option value="">All company types</option></select>
+        <input type="search" id="find" placeholder="Find a company…" list="companylist" style="width:170px">
+        <datalist id="companylist"></datalist>
+      </div>
+      <div class="timebox">
+        <button id="play" aria-label="Play the timeline">▶ Play</button>
+        <input type="range" id="time" min="0" max="10" step="1" value="10" aria-label="Show deals up to this month">
+        <span class="lbl" id="timelbl"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <main class="layout">
+    <div class="stage">
+      <div id="viz"></div>
+      <div class="legend" id="legend"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+    <aside class="panel" id="panel"></aside>
+  </main>
+
+  <section class="block" id="deals">
+    <div class="sec-head"><div><span class="kicker">The deal log</span><h2>Every deal, with its sources</h2></div></div>
+    <div class="tablebar">
+      <input type="search" id="tfind" placeholder="Search deals, companies or investors…" style="width:300px">
+      <span id="tcount"></span>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        <a class="btn3d" href="data/deals.csv" download>⬇ CSV</a>
+        <a class="btn3d" href="data/bundle.json" download>⬇ JSON</a>
+      </span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th data-sort="date">Date ↕</th><th data-sort="from">From → to ↕</th><th data-sort="amt" style="text-align:right">Amount ↕</th>
+          <th data-sort="kind">Kind ↕</th><th>Deal</th><th>Sources</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block" id="method">
+    <div class="sec-head"><div><span class="kicker">Method</span><h2>How to read the map</h2></div></div>
+    <div class="method">
+      <div class="card"><div class="ico">→</div><h3>Arrows follow the money</h3>
+        <p>Every line points from the company that pays to the company that receives. An investment points from investor to startup. A compute contract points from the buyer (say, OpenAI) to the seller (say, Oracle). The moving dots show the direction.</p>
+        <p>A <b>loop</b> is money that comes back: A pays B and B pays A, directly or through other companies.</p></div>
+      <div class="card"><div class="ico">✓</div><h3>How real is each number?</h3>
+        <p><b>Completed</b>: the money has moved. <b>Signed</b>: contracted, often paid over years. <b>Letter of intent</b> or <b>paused</b>: a promise that may never happen, drawn dashed.</p>
+        <p>Amounts are marked disclosed, reported (press, not the company) or estimated (our split of a round). "Up to" deals are counted at their maximum. Use the filters to count only binding money.</p></div>
+      <div class="card"><div class="ico">◎</div><h3>Coverage and limits</h3>
+        <p>This tracks the largest AI deals since 2019 across the US, China, Europe, the Middle East and Asia. It doesn't cover every startup round. When a round's investors aren't split out, the money is grouped as "VCs, PE and other funds", with the named investors listed.</p>
+        <p>Not investment advice. Spotted an error or a missing deal? Open an issue on GitHub.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    Built from public filings, company announcements and news reports. The data is open: see <code>data/</code> in the repository and <code>UPDATING.md</code> for how it is maintained.<span id="gen"></span>
+  </footer>
+</div>
+<div id="tip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
